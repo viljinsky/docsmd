@@ -22,13 +22,15 @@ and open the template in the editor.
         <?php  include './libs/docsmd/admin-menu.php';?>
         </div>
         
-        <?php   include './libs/docsmd/searchform.php';?>
+        <?php  
+           include './libs/docsmd/searchform.php';
+           document_navigator();
+        ?>
 
         <div class="searchresult">
 
         <?php
             
-            document_navigator();
             
             document_page();
            
@@ -43,8 +45,8 @@ and open the template in the editor.
                 contentlink : '<?=CONTENT_LINK?>',
                  
             });
-    
             Search(searchform,document.querySelector('.searchresult'));
+            
         </script>
     </body>
 </html>
