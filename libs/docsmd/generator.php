@@ -1,5 +1,6 @@
 <?php
 
+$server_path = realpath('../../').DIRECTORY_SEPARATOR;
 include_once '../config.php';
 include './docsmd-config.php';
 
@@ -32,14 +33,16 @@ function image_list($image_path){
 
 //Заполняем линки страниц из содержания.
 
-function page_generator($map){
+function page_generator(){
+    global $sitemap;
+
 
     $filename =CONTENT_PATH.LINK_TPL;
     if (file_exists($filename)) {unlink ($filename);}
 
     echo 'Добавление линков<br>';
     $handle = fopen($filename, 'w');
-    foreach ($map as $v){
+    foreach ($sitemap->map as $v){
         echo '['.$v['page'].']: '.DOC_PAGE.'?page='.$v['page']."<br>";
         fwrite($handle,'['.$v['page'].']:'."\t\t\t".' '.DOC_PAGE.'?page='.$v['page']."\n");
     }
@@ -47,7 +50,7 @@ function page_generator($map){
 
     //Создать страницы если не созданы;
     echo 'Добавление сраниц<br>';
-    foreach ($map as $v){
+    foreach ($sitemap->map as $v){
         $filename = CONTENT_PATH.$v['page'].'.md';
         if ($v['parent']==='images'):
             continue;
@@ -58,7 +61,7 @@ function page_generator($map){
             fwrite($f, '# '.$v['title'].CR.CR);
             fwrite($f, '*Страница создана автоматически 1*'.CR.CR);
             // добавть заголовки подстатей
-            fwrite($f, getContent($map, $v['page']));
+            fwrite($f, $sitemap->content($v['page'])); // getContent($map, $v['page']));
             fclose($f);
         }
     }
@@ -67,12 +70,13 @@ function page_generator($map){
 
 }
 
-function image_generator($map){
+function image_generator(){
+    global $sitemap;
 //    global $image_path_link;
     // Создать страницы
     $image_list = image_list(IMAGE_PATH);
     foreach ($image_list as $image):
-        $pp = getPage($map, $image);
+        $pp = $sitemap->page($image);//  getPage($map, $image);
         if ($pp===null){
             continue;
         }
@@ -96,7 +100,7 @@ function image_generator($map){
     $f = fopen(CONTENT_PATH.LINK_TPL, 'a');
     fwrite($f,CR);
     foreach ($image_list as $image):
-        $pp = getPage($map, $image);
+        $pp = $sitemap->page($image);// getPage($map, $image);
         if ($pp===null){
             continue;
         }
@@ -106,6 +110,6 @@ function image_generator($map){
 
 }
 
-page_generator($map);
+page_generator();
 
-image_generator($map);
+image_generator();

@@ -3,44 +3,33 @@
     define('CR',"\n\r");
     define('TAB',"\t");
     
-    define('HOME', 'Начало');
-    define('NEXT','Вперёд');
-    define('PRIOR','Назад');
-    define('SITE_MAP', 'sitemap');
-
     if (!file_exists(CONTENT_PATH.CONTENT_TPL)):
-        die(CONTENT_TPL.CONTENT_TPL.' - not found');
+        die(CONTENT_PATH.CONTENT_TPL.' - not found');
     endif;
     
-    $map = getMap(CONTENT_PATH.CONTENT_TPL);
     
-    function getPage($map,$page){
-        
-        foreach ($map as $value){
-            if ($value['page']===$page){
-                return $value;
-            }
-        }
-    }
-
-    function recur($map,$page,$padding=''){
-        
-        foreach ($map as $key=>$value){
-            if ($value['page']===$page){
-                echo $padding.'<a href="'.DOC_PAGE.'?page='.$page.'" title="'.$page.'">'.$value['title'].'</a><br>';
-                break;
-            }
-        }
-        
-        foreach ($map as $key=>$value){
-            if ($value['parent']===$page){
-                recur($map, $value['page'],$padding."\t");
-            }
-        }
-    }
+    $sitemap = new SiteMap(CONTENT_PATH.CONTENT_TPL,DOC_PAGE);
     
-    function getMap($filename){
-        $map = array();
+//    test($sitemap);
+    
+    
+    /**
+ * Задача: преобразовать файл-описания иерархии в таблицу вида
+ *   page parent title
+ */
+class SiteMap {
+    
+    public $map;
+    protected $docpage;
+            
+    /**
+     * 
+     * @param type $filename файл content.tpl
+     * @param type $docpage
+     */
+    function __construct($filename,$docpage='./index.php') {
+        $this->docpage=$docpage;
+        $this->map = array();
         $file = fopen($filename,'r');
         $p = 0 ;
         $last = 0;
@@ -78,34 +67,102 @@
 
              $last = $p;
              $m = array('page'=>$page,'parent'=>$parent,'title'=>$title);
-             $map[] = $m;
+             $this->map[] = $m;
         }
         fclose($file);
-        return $map;
+        ;
     }
-
-    function getContent($map,$serch){
+    
+    /**
+     * 
+     * @param type $page
+     * @return string
+     */
+    function content($parent){
         $result = '';
-        foreach ($map as $a):
-            if ($a['parent']===$serch):
-                $result .= '* ['.$a['title'].']['.$a['page'].']'."\n";
-            endif;
-        endforeach;
+        foreach ($this->pages($parent) as $page){
+            $a = $this->page($page);
+            $result .= '* ['.$a['title'].']['.$a['page'].']'."\n";
+        }
         if (strlen($result)>0){
-            $result = CR.CR."В этой главе следующие разделы".CR.CR.$result;
+            $result = "\n\r\n\rВ этой главе следующие разделы\n\r\n\r".$result;
         }
         return $result;
     }
     
-//------------------------------------------------------------------------------
-    function sitemap($map){
+    private function recur($page,$padding=''){
+        
+        $value  = $this->page($page);
+        echo $padding.'<a href="'.$this->docpage.'?page='.$page.'" title="'.$page.'">'.$value['title'].'</a><br>';
+
+        foreach ($this->pages($page) as $pn){
+            $value = $this->page($pn);
+            $this->recur($value['page'],$padding."\t");
+        }
+        
+        
+    }
+    
+    function sitemap(){
         echo '<h1>Карта справочника</h1><pre>';
-        foreach ($map as $value){
+        foreach ($this->map as $value){
             if (empty($value['parent'])){
-                recur($map, $value['page']);
+                $this->recur($value['page']);
             }
         }
         echo '</pre>';
     }    
     
+    function page($page){
+        foreach ($this->map as $m){
+            if ($m['page']===$page){
+                return $m;
+            }
+        }
+    }
+    
+    function pages($parent = null){
+        $result = array();
+        foreach ($this->map as $value){
+            if (!isset($parent) || $parent==$value['parent']){
+                $result[]=$value['page'];
+            }
+        }
+        return $result;
+    }
+    
+    function nextprior($page){
 
+        $pageIndex = null;
+        foreach ($this->map as $k=>$v){
+            if ($v['page']===$page){
+                $pageIndex=$k;
+                break;
+            }
+        }
+        $nextPage = null;
+        $priorPage=null;
+        if (key_exists($pageIndex-1, $this->map)){
+            $priorPage = $this->map[$pageIndex-1]['page'];
+        }
+        if (key_exists($pageIndex+1, $this->map)){
+            $nextPage=  $this->map[$pageIndex+1]['page'];
+        }
+        return array('next'=>$nextPage,'prior'=>$priorPage);
+        
+    }
+    
+}
+
+function test($sitemap){
+    foreach ($sitemap->pages() as $page){
+    echo ''.$page.'<br>';
+    $p = $sitemap->page($page);
+    echo 'title     : '.$p['title'].'<br>';
+    echo 'nextprior : '.print_r($sitemap->nextprior($page)).'<br>';
+    echo 'pages     : '.print_r($sitemap->pages($page)).'<br>';
+    echo '<hr>';
+    }
+}
+
+    

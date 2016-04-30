@@ -25,6 +25,11 @@
         ?>
 
         <div class="searchresult">
+            
+            
+        <a href="./?page=video">Видео</a>    
+        <a href="./?page=images">Формы</a>    
+        <a href="./?page=index">Документация</a>    
 
         <?php
             document_page();

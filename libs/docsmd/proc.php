@@ -1,32 +1,20 @@
 <?php
-
 session_start();
 
 $server_path = realpath('../../').DIRECTORY_SEPARATOR;
-
 include '../connect.php';
 
-include 'docsmd-config.php';
+include './docsmd-config.php';
 
 include_once './Parsedown.php';
 
 include './site-map.php';
 
-//include '../../libs/auth/Permission.php';
-//include '../../libs/auth/consts.php';
-//$permission= new Permission($_SESSION['user_id']);
 
-$allow_write = (Boolean)filter_input(INPUT_POST,'allow_write');
+$allow_write  = (Boolean)filter_input(INPUT_POST,'allow_write');
 $allow_replay = (Boolean)filter_input(INPUT_POST,'allow_replay');
 $allow_attach = (Boolean)filter_input(INPUT_POST,'allow_attach');
 
-
-
-echo '<div>'
-     .'Писать: "'.$allow_write.'"'
-     .' Отвечать: "'.$allow_replay.'"'
-     .' Прикреплять: "'.$allow_attach.'"'
-     .'</div>';
 
 $command = filter_input(INPUT_POST,'command');
 if (isset($command)){

@@ -22,7 +22,7 @@ if (isset($command)){
 }
 
 function search(){
-    global $map;
+    global $sitemap;
 
     $word = urldecode(filter_input(INPUT_POST,'search'));
 
@@ -30,8 +30,8 @@ function search(){
     $count = 0;
     if (isset($word) &&  strlen($word)>0){
         $word= mb_strtolower($word,'UTF-8');
-        foreach ($map as $value){
-            $page = $value['page'];
+        foreach ($sitemap->pages() as $page){
+//            $page = $value['page'];
 
             $filename = CONTENT_PATH.$page.'.md';
             if (file_exists($filename)){
@@ -39,6 +39,7 @@ function search(){
 
                 if (preg_match("/$word/", $txt,$matches)>0){
                     $count++;
+                    $value = $sitemap->page($page);
                     echo '<div class="search-item"><a href="'.DOC_PAGE.'?page='.$value['page'].'">'.$value['title'].'</a><br>';
                     echo print_r($matches);
                     echo "<br><br>";

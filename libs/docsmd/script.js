@@ -132,18 +132,19 @@ function DocManager(comments,options){
                        +'<input type="submit" value="Загрузить">'
                        +'<input type="reset" value="Отмена">'
                        +'</div>';
-        element.appendChild(form);
+//        element.appendChild(form);
+        document.body.appendChild(form);
         form_center(form);
         
         form.onsubmit = function(){
             callback(new FormData(this));
-            element.removeChild(form);
+            document.body.removeChild(form);
             form = null;
             return false;
         };
         
         form.onreset = function(){
-            element.removeChild(form);
+            document.body.removeChild(form);
             form=null;
             return false;
         };

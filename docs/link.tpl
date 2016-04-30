@@ -13,10 +13,8 @@
 [image3]:			 ./index.php?page=image3
 [image4]:			 ./index.php?page=image4
 [image5]:			 ./index.php?page=image5
-[test1]:                         ./index.php?page=test1
 
-
-[image1.png]: 			./docs/images/image1.png "Рисунок 1"
+[image1.png]: 			./docs/images/image1.png "Рисунок 1"
 [image2.png]: 			./docs/images/image2.png "Рисунок 2"
 [image3.png]: 			./docs/images/image3.png "Рисунок 3"
 [image4.png]: 			./docs/images/image4.png "Рисунок 4"
