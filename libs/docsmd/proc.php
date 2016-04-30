@@ -2,6 +2,8 @@
 
 session_start();
 
+$server_path = realpath('../../').DIRECTORY_SEPARATOR;
+
 include '../connect.php';
 
 include 'docsmd-config.php';

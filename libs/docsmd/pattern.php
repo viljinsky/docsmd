@@ -103,6 +103,8 @@
     function document_page(){
         global $map,$page;
 
+        $a = array('test1'=>'./test1.php','test2'=>'./test2.php');
+        
         if (!isset($page)){
             $page = DEFAULT_MD;    
         }
@@ -110,26 +112,36 @@
         echo '<!-- docpage body -->'.CR.CR;
         echo '<div class="docpage" data-page="'.$page.'">';
         
-        switch ($page){
-            case SITE_MAP:
-                sitemap($map);
-                break;
-            case 'myschedule':
-                include './app/myschedule.php';
-                break;
-            case 'messages':
-                messages($map);
-                break;
-            default:
-                $filename = CONTENT_PATH.$page.'.md';
-                if (!file_exists($filename)){
-                    echo '<div style="background:red;padding:50px;">Страница не найдена</div>';
-                }  else {
-                    $parsedown = new Parsedown();
-                    $text = file_get_contents($filename);
-                    $link = file_get_contents(CONTENT_PATH.'link.tpl');
-                    echo $parsedown->text($text."\n".$link);
-                }
+        if (key_exists($page, $a) ){
+            $tmp = $a[$page];
+            echo 'Попытка загрузить '.$tmp;
+            if (file_exists($tmp)){
+                include $tmp;
+            }
+            
+        } else {
+        
+            switch ($page){
+                case SITE_MAP:
+                    sitemap($map);
+                    break;
+                case 'myschedule':
+                    include './app/myschedule.php';
+                    break;
+                case 'messages':
+                    messages($map);
+                    break;
+                default:
+                    $filename = CONTENT_PATH.$page.'.md';
+                    if (!file_exists($filename)){
+                        echo '<div style="background:red;padding:50px;">Страница не найдена</div>';
+                    }  else {
+                        $parsedown = new Parsedown();
+                        $text = file_get_contents($filename);
+                        $link = file_get_contents(CONTENT_PATH.'link.tpl');
+                        echo $parsedown->text($text."\n".$link);
+                    }
+            }            
         }
 
         echo '</div>';
