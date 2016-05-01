@@ -80,8 +80,8 @@ class SiteMap {
      */
     function content($parent){
         $result = '';
-        foreach ($this->pages($parent) as $page){
-            $a = $this->page($page);
+        foreach ($this->pages($parent) as $a){
+//            $a = $this->page($page);
             $result .= '* ['.$a['title'].']['.$a['page'].']'."\n";
         }
         if (strlen($result)>0){
@@ -95,8 +95,7 @@ class SiteMap {
         $value  = $this->page($page);
         echo $padding.'<a href="'.$this->docpage.'?page='.$page.'" title="'.$page.'">'.$value['title'].'</a><br>';
 
-        foreach ($this->pages($page) as $pn){
-            $value = $this->page($pn);
+        foreach ($this->pages($page) as $value){
             $this->recur($value['page'],$padding."\t");
         }
         
@@ -114,9 +113,9 @@ class SiteMap {
     }    
     
     function page($page){
-        foreach ($this->map as $m){
-            if ($m['page']===$page){
-                return $m;
+        foreach ($this->map as $value){
+            if ($value['page']===$page){
+                return $value;
             }
         }
     }
@@ -125,7 +124,7 @@ class SiteMap {
         $result = array();
         foreach ($this->map as $value){
             if (!isset($parent) || $parent==$value['parent']){
-                $result[]=$value['page'];
+                $result[]=$value;
             }
         }
         return $result;
@@ -156,11 +155,11 @@ class SiteMap {
 
 function test($sitemap){
     foreach ($sitemap->pages() as $page){
-    echo ''.$page.'<br>';
-    $p = $sitemap->page($page);
-    echo 'title     : '.$p['title'].'<br>';
-    echo 'nextprior : '.print_r($sitemap->nextprior($page)).'<br>';
-    echo 'pages     : '.print_r($sitemap->pages($page)).'<br>';
+    echo ''.$page['page'].'<br>';
+//    $p = $sitemap->page($page);
+    echo 'title     : '.$page['title'].'<br>';
+    echo 'nextprior : '.print_r($sitemap->nextprior($page['page'])).'<br>';
+    echo 'pages     : '.print_r($sitemap->pages($page['page'])).'<br>';
     echo '<hr>';
     }
 }

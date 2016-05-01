@@ -66,6 +66,10 @@
                 $m1=  $sitemap->page($m1['parent']);// getPage($map, $m1['parent']);
                 $path ='<a href="'.DOC_PAGE.'?page='.$m1['page'].'">'.$m1['title'].'</a>'.(strlen($path)===0?'':' / ').$path;
             }
+            if (empty($path)){
+                $v = $sitemap->page($path);
+                $path=$v['title'];
+            }
                 
         }
         if (empty($path)){

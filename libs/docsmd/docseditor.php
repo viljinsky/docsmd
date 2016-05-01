@@ -30,7 +30,8 @@ function search(){
     $count = 0;
     if (isset($word) &&  strlen($word)>0){
         $word= mb_strtolower($word,'UTF-8');
-        foreach ($sitemap->pages() as $page){
+        foreach ($sitemap->pages() as $a){
+            $page = $a['page'];
 //            $page = $value['page'];
 
             $filename = CONTENT_PATH.$page.'.md';
