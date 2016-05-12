@@ -44,20 +44,26 @@ function Request(callback){
  * @param {type} php_path
  * @returns {undefined}
  */
-function Search(search_form,result){ 
-    if (search_form!==null){
+function Search(result){ 
+    
+    var searchform = document.createElement('form');
+    searchform.className='search-form'
+    searchform.innerHTML = 
+            '<input name="search"  placeholder="Поиск по сайту">'+
+            '<input type="submit" value="Найти">';
+    document.body.insertBefore(searchform,result);
+    
 
-        search_form.onsubmit = function(){
-            var request = Request(function(){
-                result.innerHTML = request.responseText;
-            });
-            request.open('POST','./libs/docsmd/docseditor.php');
-            var data = new FormData(this);
-            data.append('command','search');
-            request.send(data);
-            return false;
-        };
-    }
+    searchform.onsubmit = function(){
+        var request = Request(function(){
+            result.innerHTML = request.responseText;
+        });
+        request.open('POST','./libs/docsmd/docseditor.php');
+        var data = new FormData(this);
+        data.append('command','search');
+        request.send(data);
+        return false;
+    };
 
 }
 

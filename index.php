@@ -2,50 +2,46 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title></title>
+        <title>Управление содержимым сайта v 4.0</title>
         <link rel="stylesheet" href="libs/docsmd/style.css">
         <script src="libs/docsmd/docseditor.js"></script>
     </head>
     <body>
+        
         <?php
             // Определить путь к сайту
             $server_path= __DIR__.DIRECTORY_SEPARATOR;
             include './libs/config.php';
             include './libs/docsmd/pattern.php';
-            ?>
-        
-        
-<!--        <div id="adminpanel">
-            <?php  include './libs/docsmd/adminpanel.php';?>
-        </div>-->
-        
-        <?php  
-           include './libs/docsmd/searchform.php';
-           document_navigator();
+            
+            document_navigator();
+            
         ?>
 
         <div class="searchresult">
             
             
-        <a href="./?page=video">Видео</a>    
-        <a href="./?page=images">Формы</a>    
-        <a href="./?page=index">Документация</a>    
+            <ul class="menu main-menu">    
+                <li><a href="./?page=video">Видео</a></li>    
+                <li><a href="./?page=images">Формы</a></li>    
+                <li><a href="./?page=index">Документация</a></li>    
+           </ul>
 
-        <?php
-            document_page();
-        ?>
+        <?php  document_page(); ?>
             
         </div>    
         
         <script>
-            var editor = new Editor({
+            
+            Editor({
                 contenttpl  : '<?=CONTENT_TPL?>',
                 page        : '<?=$page?>',
                 linktpl     : '<?=LINK_TPL?>',
                 contentlink : '<?=CONTENT_LINK?>',
                  
             });
-            Search(searchform,document.querySelector('.searchresult'));
+    
+            Search(document.querySelector('.searchresult'));
             
         </script>
     </body>

@@ -5,7 +5,7 @@ $server_path = realpath('../../').DIRECTORY_SEPARATOR ;
 
 include_once '../config.php';
 include_once './docsmd-config.php';
-include './site-map.php';
+include      './site-map.php';
 
 $command = filter_input(INPUT_POST,'command');
 if (isset($command)){

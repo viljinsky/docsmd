@@ -62,4 +62,7 @@ p{text-align: justify;}
 .menu a{text-decoration: none;color: #5555dd;}
 .menu a:hover{text-decoration: underline;}
 
+.main-menu{text-align: center;}
+.main-menu li{border: 1px solid #ccc;}
+
 .top-side{position: fixed;top: 0;left: 0;width: 100%;background: white;border-bottom: 1px solid gray;}
