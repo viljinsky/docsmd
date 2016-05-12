@@ -95,10 +95,13 @@
     function document_page(){
         global $sitemap,$page;
 
+        
         // страницы исключения
         $a = array(
             'test1'         =>  './test1.php',
-            'myschedule'    =>  './app/myschedule.php'
+            'myschedule'    =>  './app/myschedule.php',
+            '1'     =>      './app/index.php',
+//            'usercomments'  =>   './libs/docsmd/usercomments.php'
             );
         
         if (!isset($page)){

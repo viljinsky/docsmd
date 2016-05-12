@@ -15,9 +15,9 @@
             ?>
         
         
-        <div id="adminpanel">
+<!--        <div id="adminpanel">
             <?php  include './libs/docsmd/adminpanel.php';?>
-        </div>
+        </div>-->
         
         <?php  
            include './libs/docsmd/searchform.php';
@@ -38,7 +38,7 @@
         </div>    
         
         <script>
-            var editor = new Editor(adminpanel,{
+            var editor = new Editor({
                 contenttpl  : '<?=CONTENT_TPL?>',
                 page        : '<?=$page?>',
                 linktpl     : '<?=LINK_TPL?>',

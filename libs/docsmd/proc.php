@@ -7,18 +7,24 @@ include '../connect.php';
 include './docsmd-config.php';
 
 include_once './Parsedown.php';
+include '../auth/Permission.php';
 
-include './site-map.php';
-
-
-$allow_write  = (Boolean)filter_input(INPUT_POST,'allow_write');
-$allow_replay = (Boolean)filter_input(INPUT_POST,'allow_replay');
-$allow_attach = (Boolean)filter_input(INPUT_POST,'allow_attach');
 
 
 $command = filter_input(INPUT_POST,'command');
 if (isset($command)){
     switch ($command){
+        case 'count':
+            $topic = filter_input(INPUT_POST,'topic');
+            $n= get_message_count($topic);
+            $count = intval($n['count']);
+            if ($count===0){
+                echo '<h2>Комментарии (ещё никто не писал)</h2>';
+            } else {
+                echo '<h2>Комментарии ('.$count.')</h2>';
+            }
+            
+            break;
         case 'add':
         case 'replay':
             add_message();
@@ -60,9 +66,58 @@ if (isset($command)){
             reload_item();
             break;
         
+        case 'user-messages':
+            user_messages();
+            break;
+        
+        case 'mark':
+            mark();
+            break;
         default :
             echo "Command '".$command."' - not defined";
     }
+}
+
+function mark(){
+    $user_id = filter_input(INPUT_POST,'user_id');
+    $item_id = filter_input(INPUT_POST,'item_id');
+    $mark = filter_input(INPUT_POST,'mark');
+    
+    $result = mysql_query("select mark from item_mark where user_id=$user_id and item_id=$item_id");
+    if (mysql_num_rows($result)===0){
+        mysql_query("insert into item_mark(user_id,item_id,mark) values($user_id,$item_id,$mark)") or die(mysql_error());
+    } else {
+        mysql_query("update item_mark set mark=$mark where user_id=$user_id and item_id=$item_id") or die(mysql_error());
+    }
+
+    $result = mysql_query("select (select count(*) from item_mark "
+            . "where item_id=$item_id and mark=true) as up,"
+            . "(select count(*) from item_mark where item_id=$item_id and mark=false) as down;") or die(mysql_error());
+    $data= mysql_fetch_array($result,MYSQL_ASSOC);
+    
+    echo '{"up":'.$data['up'].',"down":'.$data['down'].',"error":0}';//print_r($data);
+}
+
+function user_messages(){
+    $user_id = filter_input(INPUT_POST,'user_id');
+    $result = mysql_query("select b.topic_caption,b.topic_name,a.comment_time from topic_item a inner join topic b on a.topic_id=b.topic_id
+                           where a.user_id=$user_id;") or (die(mysql_error()));
+    
+    echo '<div class="comments-inner">';
+    
+    while ($data = mysql_fetch_array($result)){
+        list($topic_caption,$topic_name,$comment_time)=$data;
+        
+        echo '<div class="comment>';
+        echo '<div class="comment-item>';
+        echo ''.$topic_caption.' '.$topic_name.' '.$comment_time.'<br>';
+        echo '</div>';
+        
+        echo '</div>';
+        
+    }
+    
+    echo '</div>';
 }
 
 function reload_item(){
@@ -185,27 +240,16 @@ function read_message_item($item_id){
 
     $parse = new Parsedown();
 
-    $sql = "select a.user_id,a.topic_id,a.comment_time,a.comment_text,"
-      ."concat(u.last_name,' ',u.first_name),a.replay_to,'TOPIC_NAME',"
-      ."(select count(*) from topic_item where user_id=a.user_id) "
-      ."from topic_item a inner join users u on a.user_id=u.user_id\n"
-      ."  where a.item_id=$item_id";
-
-    $result=mysql_query($sql) or die("read_message_item : ".  mysql_error());
+    $result=mysql_query("select * from v_comments where item_id=$item_id") or die(mysql_error());
 
     $data = mysql_fetch_array($result);
-
-    list($user_id,$comment_id,$comment_time,$comment_text,$user_name,$replay_to,
-            $topic_name,$message_count)=$data;
-
-    //$comment_text = str_replace("\n",'<br>',$comment_text);
+    
+    list($t_id,$parent_id,$item_id,$comment_time,$comment_text, $user_id,$user_name,$replay_to,$topic_name,$message_count,$ago,$mark_up,$mark_down,$replay_to_user_id,$replay_to_user,$attach_count)=$data;
 
     $comment_text = $parse->text($comment_text);
 
-//    $attr = 'data-user-id="'.$user_id.'" data-comment-id="'.$item_id.'" ';        
-//        if (isset($replay_to)){
-//            $attr.=' data-replay-to="'.$replay_to.'"';
-//    }
+    
+    
     $allow_attach = true;
     $allow_edit = true;
     $allow_replay =false;
@@ -215,6 +259,8 @@ function read_message_item($item_id){
     if (isset($replay_to)){
         $attr .= ' data-replay-to="'.$replay_to.'"';
     }
+
+    $attr .= ' data-mark="'.$mark_up.','.$mark_down.'"';
     
 
     include './message_text.php';
@@ -241,8 +287,6 @@ function add_message(){
         $sql = "insert into topic (topic_name) values('$topic_name')";
         mysql_query($sql) or die('sql: '.$sql."\n message: ".mysql_error());
         $topic_id = mysql_insert_id();
-//        $sql = "select max(topic_id) from topic";
-//        $result = mysql_query($sql) or die("sql: ".$sql."\n message:".mysql_error());
     } else {
         list($topic_id) = mysql_fetch_array($result);
     }
@@ -312,6 +356,37 @@ function get_message_count($page){
     $result = mysql_query($sql_select_count) or die(mysql_error());
     return mysql_fetch_array($result);
 }
+
+/**
+ * Строка дни часы минуты от секунд ago
+ * @param type $ago
+ */
+function time_ago($ago){
+     if (isset($ago)){
+        $seconds = intval($ago);
+        $days = floor($seconds/86400);
+        $seconds = $seconds-($days*86400);
+        if ($days>0){
+            echo $days.' дн. назад';
+        } else {
+            $hours = floor($seconds/3600);
+            $seconds = $seconds-($hours*3600);
+            if ($hours>0){
+                echo $hours.' ч. назад';
+            } else {
+                $minutes = floor($seconds/60);
+                if ($minutes>0){
+                    echo $minutes.' мин. назад';
+                } else {
+                    echo ' только что';
+                }
+            }
+        }
+     }
+
+}
+
+
 /**
  * Чтение списка сообщений
  * @return type
@@ -320,66 +395,81 @@ function read(){
 //    global $permission;
 
 
+    //---------------- comments-header----------------------------------------//
     $page = urldecode(filter_input(INPUT_POST, 'page'));
     $n = get_message_count($page); 
+    echo '<div class="comments-header">';
     if (intval($n['count']) === 0){
-        echo '<h2>Комментариев ещё никто не писал</h2>';
-        echo '<div class="comments-inner">';
-        echo '</div>';
-        return;        
-    } 
+        echo '<h2>Комментарии (ещё никто не писал)</h2>';
+    } else {
+        echo '<h2>Комментарии ('.$n['count'].')</h2>';    
+    }
+    echo '</div>';
+    //---------------- comments-header----------------------------------------//
 
-    $topic_id=$n['topic_id'];    
-
-    echo '<h2>Комментарии ('.$n['count'].')</h2>';
-
-    $sql = "select "
-          ." a.user_id,a.item_id,a.comment_time,a.comment_text,"
-          ." concat(u.last_name,' ',u.first_name) as user_name,a.replay_to,b.topic_name,\n "
-          ."(select count(*) from topic_item where user_id=a.user_id) as message_count \n"  
-          ."from topic_item a inner join topic b on b.topic_id=a.topic_id "
-          ."left join users u on u.user_id=a.user_id "  
-          ."where b.topic_id=$topic_id  \n"
-          ."order by ifnull(a.replay_to,a.item_id),item_id"  ;
-
-    $result = mysql_query($sql) or die(mysql_error());
-
-    $parse = new Parsedown();
-
+    //---------------- comments-inner-----------------------------------------//
     echo '<div class="comments-inner">';
+    if (intval($n['count'])>0){
+    
+        $topic_id=$n['topic_id'];    
 
-    while ($data = mysql_fetch_array($result)){
-        list($user_id,$item_id,$comment_time,$comment_text,$user_name,$replay_to,$topic_name,$message_count)=$data;
 
-//        $comment_text = str_replace("\n",'<br>',$comment_text);
+        $result = mysql_query("select * from v_comments where topic_id=$topic_id order by parent_id desc,item_id") or die(mysql_error());
+
+        $parse = new Parsedown();
+
+//        echo '<div class="comments-inner">';
         
-        $comment_text = $parse->text($comment_text);
-//        echo $comment_text;
-
-        // permission 0 - добавлять 1 - отвечать 2- прикреплять 
-       
-        
+        if (isset($_SESSION['permission'])){
+            $permission = $_SESSION['permission'];
+        } else {
+            $permission = array(1=>true,2=>true,3=>true,4=>true,5=>true);
+        }
         $current = intval($_SESSION['user_id']);
-        $allow_write   = ($current === intval($user_id));
-        $allow_replay = ($current !== intval($user_id));
-        $allow_attach = ($current === intval($user_id));
-        
-        $attr = 'data-user-id="'.$user_id.'" data-comment-id="'.$item_id.'" ' 
-               .'data-permission="'.$allow_attach.','.$allow_write.','.$allow_replay.','.$allow_write.'" ';
-        if (isset($replay_to)){
-            $attr .= ' data-replay-to="'.$replay_to.'"';
+//        echo print_r($permission).'<br>';
+
+        while ($data = mysql_fetch_array($result)){
+             list($t_id,$parent_id,$item_id,$comment_time,$comment_text, $user_id,$user_name,$replay_to,$topic_name,$message_count,$ago,$mark_up,$mark_down)=$data;
+             $replay_to_user= $data['replay_to_user'];
+
+            $comment_text = $parse->text($comment_text);
+
+            // permission 0 - добавлять 1 - отвечать 2- прикреплять 
+
+            
+            $allow_write   = $permission[Permission::ADD_MESSAGE] && ($current === intval($user_id));
+            $allow_replay  = $permission[Permission::REPLAY_MESSAGE] && ($current!==0 && $current !== intval($user_id));
+            $allow_attach  = $permission[Permission::ADD_ATTACHMENT] && ($current === intval($user_id));
+            
+
+            $attr = 'data-user-id="'.$user_id.'" data-comment-id="'.$item_id.'" ' 
+                   .'data-permission="'.$allow_attach.','.$allow_write.','.$allow_replay.','.$allow_write.'" ';
+            if (isset($replay_to)){
+                $attr .= ' data-replay-to="'.$replay_to.'"';
+            }
+            
+            $attr .= ' data-mark="'.$mark_up.','.$mark_down.'"';
+
+    //------------------- topic item ----------------------------        
+            echo '<div class="comment">';
+            include './message_text.php';
+            echo get_item_attachment($item_id);
+            
+//            echo 'allow write  -> "'.$allow_write.'"<br>';
+//            echo 'allow replay -> "'.$allow_replay.'"<br>';
+//            echo 'allow attach -> "'.$allow_attach.'"<br>';
+            
+            
+            
+            echo '</div>';
+    //-----------------------------------------------        
         }
 
-//------------------- topic item ----------------------------        
-        echo '<div class="comment">';
-        include './message_text.php';
-        echo get_item_attachment($item_id);
-        echo '</div>';
-//-----------------------------------------------        
     }
-
     echo '</div>';
-    echo '<div><button>Добавить</button></div>';
+    //--------------comments-inner--------------------------------------------//
+    
+    echo '<div class="comments-footer"><button>Добавить</button></div>';
 
 }
 

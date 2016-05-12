@@ -1,4 +1,11 @@
-body {font-family: Arial;color:#444;}
+body,html {height: 100%;margin: 0; padding: 0;}
+body { font-family: Arial;color:#444;}
+.hbody { max-width: 800px; margin: 0 auto;}
+header,footer {background: lightsteelblue;padding: 10px;}
+.pagewraper{min-height: 100%; }
+.hfooter{height: 60px;padding: 10px;}
+footer{height: 40px; margin-top: -60px;}
+
 a {color: #5555dd; text-decoration: none;}
 a:hover{text-decoration: underline;}
 
@@ -24,9 +31,9 @@ a:hover{text-decoration: underline;}
 
 img {max-width: 90%;}
 blockquote {background: #f0f0f0; padding: 10px; border: 1px solid #ccc;}
-pre { padding: 10px; border: 1px solid #ccc;background: yellow; font-family: Courier;}
+pre { padding: 10px; border: 1px solid #ccc;color: white; background: lightskyblue; font-family: Courier;}
 
-
+p{text-align: justify;}
 
 .search-form {border: 1px solid #ccc; padding: 10px;float: right;}
 .search-item {border:1px solid #ccc; width: 90%;margin: 0 auto;padding: 20px;margin-bottom: 20px;}
@@ -54,3 +61,5 @@ pre { padding: 10px; border: 1px solid #ccc;background: yellow; font-family: Cou
 .menu li{display: inline-block; padding: 5px;}
 .menu a{text-decoration: none;color: #5555dd;}
 .menu a:hover{text-decoration: underline;}
+
+.top-side{position: fixed;top: 0;left: 0;width: 100%;background: white;border-bottom: 1px solid gray;}

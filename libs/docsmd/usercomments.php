@@ -68,33 +68,29 @@ function item_list($page){
     
     echo '<h3>Список сообщений</h3>';
     
-    $sql= "select b.topic_name,
-           b.topic_caption,
-           concat(u.last_name,' ',u.first_name) as user_name,
-           u.login,
-           a.comment_time,a.comment_text,
-           a.item_id,
-           a.replay_to,
-           a.topic_id,
-           a.replay_to,
-           a.user_id
-           from topic_item a inner join topic b on a.topic_id=b.topic_id
-            inner join users u on u.user_id=a.user_id 
-            order by ifnull(a.replay_to,a.item_id),item_id
-            limit $start,$n_count
-            ;";
+//    $sql= "select b.topic_name,
+//           b.topic_caption,
+//           concat(u.last_name,' ',u.first_name) as user_name,
+//           u.login,
+//           a.comment_time,a.comment_text,
+//           a.item_id,
+//           a.replay_to,
+//           a.topic_id,
+//           a.replay_to,
+//           a.user_id
+//           from topic_item a inner join topic b on a.topic_id=b.topic_id
+//            inner join users u on u.user_id=a.user_id 
+//            order by ifnull(a.replay_to,a.item_id),item_id
+//            limit $start,$n_count
+//            ;";
 
-    $result = mysql_query($sql) or die(mysql_error());
+    $result = mysql_query("select * from v_comments") or die(mysql_error());
     $message_no = ($page-1)*$n_count;
     while ($data = mysql_fetch_array($result)){
-        list($topic_name,$topic_caption,$user_name,$login,$comment_time,$comment_text,$item_id,$replay_to)=$data;
-        echo '<div class="comment-item" ';
-        if (isset($replay_to)){
-            echo 'data-replay-to="'.$replay_to.'" ';
-        }
-        echo '>';
-        echo (++$message_no).'.&nbsp;<b>'.$item_id.' - '.$replay_to.'</b>'.'.<pre>'.$topic_name.' '.$user_name.' '.$comment_time.'</pre><br>'
-                .$comment_text;
+        echo '<div class="comment-item">';
+        echo ''.$data['user_name'].'<br>';
+        echo ''.$data['replay_to_user'].'<br>';
+        echo ''.$data['comment_text'];
         echo '</div>';
     }
     

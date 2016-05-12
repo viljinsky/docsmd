@@ -38,6 +38,10 @@ class SiteMap {
          while ($str = fgets($file)){
 
              if (trim($str)==='') { continue; }
+             if (!strpos($str, '=')){
+                     (die ('Ошибка в tpl файле.<br>Строка "<code>'.$str.'</code>" - не содержит знак равества'));
+             }
+             
 
              $n = 0;
              for ($i=0;$i<strlen($str);$i++){

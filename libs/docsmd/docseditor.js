@@ -75,7 +75,20 @@ function Search(search_form,result){
  * 
  */
 
-function Editor(element,options){
+function Editor(options){
+    
+    var element = document.createElement('div');
+    element.className='top-side';
+    element.innerHTML="<ul class='admin-menu menu'>"
+    +'<li><a href="#" data-action="edit_page"   >Текущую страницу</a></li></li>'
+    +'<li><a href="#" data-action="edit_content">файл content.tpl</a></li>'
+    +'<li><a href="#" data-action="edit_link"   >Файл link.tpl</a></li></li>'
+    +'<li><a href="#" data-action="generator"   >Генератор</a></li>'
+    +'</ul>';
+
+    document.body.insertBefore(element,null);
+
+    document.body.style.marginTop = element.clientHeight+'px';
                     
     var contenttpl  = options['contenttpl'];
     var page        = options['page'];
